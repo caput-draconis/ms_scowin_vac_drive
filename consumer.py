@@ -2,18 +2,27 @@ import json
 import pika
 import django
 from sys import path
-from os import environ
+import os
 
 #path.append('E:\BIT-FSE-Projects\C2-Assignment2\ms_scowin_vac_drive\ms_scowin_vac_drive\settings.py') #Your path to settings.py file
-environ.setdefault('DJANGO_SETTINGS_MODULE', 'ms_scowin_vac_drive.settings') 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ms_scowin_vac_drive.settings') 
 django.setup()
 from vac_drive.models import Student
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', heartbeat=600, blocked_connection_timeout=300))
+# connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', heartbeat=600, blocked_connection_timeout=300))
+# connection = pika.BlockingConnection(pika.ConnectionParameters('rabbit_mq'))
+# amqp_url = os.environ['AMQP_URL']
+
+amqp_url = 'amqp://rabbit_mq?connection_attempts=10&retry_delay=10'
+url_params = pika.URLParameters(amqp_url)
+
+# connect to rabbitmq
+connection = pika.BlockingConnection(url_params)
 channel = connection.channel()
 channel.queue_declare(queue='vacdrive')
 
 def callback(ch, method, properties, body):
+
     print("Received in vacdrive...")
     print(body)
     data = json.loads(body)
@@ -36,10 +45,8 @@ def callback(ch, method, properties, body):
         student.existingComorbidites = data['existingComorbidites']
         student.save()
         print("student updated")    
+    ch.basic_ack(delivery_tag=method.delivery_tag)
   
-channel.basic_consume(queue='vacdrive', on_message_callback=callback, auto_ack=True)
+channel.basic_consume(queue='vacdrive', on_message_callback=callback)
 print("Started Consuming...")
 channel.start_consuming()
-
-
-
