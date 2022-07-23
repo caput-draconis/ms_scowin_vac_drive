@@ -13,7 +13,7 @@ from vac_drive.models import Student
 # connection = pika.BlockingConnection(pika.ConnectionParameters('rabbit_mq'))
 # amqp_url = os.environ['AMQP_URL']
 
-amqp_url = 'amqp://rabbit_mq?connection_attempts=10&retry_delay=10'
+amqp_url = 'amqp://rabbit-mq?connection_attempts=10&retry_delay=10'
 url_params = pika.URLParameters(amqp_url)
 
 # connect to rabbitmq
