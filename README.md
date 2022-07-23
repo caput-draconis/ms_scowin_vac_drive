@@ -1,4 +1,10 @@
-# ms_scowin_vac_drive
+## Run in local system
+
+#### Pre-requisites
+
+> `Rabbitmq` service should be up and running.
+
+#### Steps to reproduce:
 
 Clone the repository and install the required packages using below commands.
 
@@ -25,9 +31,32 @@ Start the server
 python manage.py runserver <port>
 ```
 
-Verify the deployment by navigating to your server address in
-your preferred browser.
+In another terminal, start the consuming service.
+```sh
+python consumer.py
+```
+
+Verify the deployment by navigating to your server address in your preferred browser.
 
 ```sh
 127.0.0.1:<port>
+```
+
+## Run as docker container
+
+Build the Dockerfile
+
+```
+DOCKER_BUILDKIT=0 docker build . -t <image-name> --no-cache
+```
+
+Run the image
+```
+docker run -d -p 8085:8085 <image-name>
+```
+
+Verify the deployment by navigating to your server address in your preferred browser.
+
+```sh
+127.0.0.1:8085
 ```
