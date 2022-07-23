@@ -13,15 +13,16 @@ from vac_drive.models import Student
 # connection = pika.BlockingConnection(pika.ConnectionParameters('rabbit_mq'))
 # amqp_url = os.environ['AMQP_URL']
 
-
-def callback(ch, method, properties, body):
-    amqp_url = 'amqp://rabbit_mq?connection_attempts=10&retry_delay=10'
-    url_params = pika.URLParameters(amqp_url)
+amqp_url = 'amqp://rabbit_mq?connection_attempts=10&retry_delay=10'
+url_params = pika.URLParameters(amqp_url)
 
 # connect to rabbitmq
-    connection = pika.BlockingConnection(url_params)
-    channel = connection.channel()
-    channel.queue_declare(queue='vacdrive')
+connection = pika.BlockingConnection(url_params)
+channel = connection.channel()
+channel.queue_declare(queue='vacdrive')
+
+def callback(ch, method, properties, body):
+
     print("Received in vacdrive...")
     print(body)
     data = json.loads(body)
@@ -44,10 +45,8 @@ def callback(ch, method, properties, body):
         student.existingComorbidites = data['existingComorbidites']
         student.save()
         print("student updated")    
+    ch.basic_ack(delivery_tag=method.delivery_tag)
   
-    channel.basic_consume(queue='vacdrive', on_message_callback=callback, auto_ack=True)
-    print("Started Consuming...")
-    channel.start_consuming()
-
-
-
+channel.basic_consume(queue='vacdrive', on_message_callback=callback)
+print("Started Consuming...")
+channel.start_consuming()
